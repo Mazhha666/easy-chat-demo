@@ -10,6 +10,7 @@ import lombok.Data;
 public enum ResponseStatusCode {
     CODE_404(404,"PAGE NOT FOUND"),
     CODE_601(601,"primary key collide"),
+    CODE_901(901,"login excess time"),
     STATUS_SUCCESS(200,"success"),
     STATUS_BUSINESS_ERROR(600,"business error"),
     STATUS_SERVER_ERROR(500,"server error");

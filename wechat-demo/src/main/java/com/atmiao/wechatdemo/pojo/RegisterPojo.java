@@ -1,9 +1,7 @@
 package com.atmiao.wechatdemo.pojo;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import com.atmiao.wechatdemo.commons.Constants;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 /**
@@ -18,6 +16,7 @@ public class RegisterPojo {
     @Email
     private String email;
     @NotEmpty
+    @Pattern(regexp = Constants.REGEX_PASSWORD)
     private String password;
     @NotEmpty
     private String nickName;

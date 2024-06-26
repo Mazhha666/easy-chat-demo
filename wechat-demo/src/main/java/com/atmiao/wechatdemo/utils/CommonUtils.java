@@ -11,6 +11,9 @@ import java.util.Random;
  * @version 1.0
  */
 public class CommonUtils {
+    public static String getGroupId(){
+        return UserContactTypeEnum.GROUP.getPrefix() + getRandomNumber(Constants.Length_11);
+    }
     public static String getUserId(){
         return UserContactTypeEnum.USER.getPrefix() + getRandomNumber(Constants.Length_11);
     }

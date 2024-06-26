@@ -35,9 +35,18 @@ public class AGlobalExceptionHandlerController {
         }else if(e instanceof BusinessException){
             //业务错误
             BusinessException biz = (BusinessException) e;
-            ajaxResponse.setCode(ResponseStatusCode.STATUS_BUSINESS_ERROR.getCode());
-            ajaxResponse.setInfo(biz.getMsg());
-            ajaxResponse.setStatus(ResponseStatusCode.STATUS_BUSINESS_ERROR.getStatus());
+            Integer code = ResponseStatusCode.STATUS_BUSINESS_ERROR.getCode();
+            String msg =biz.getMsg();
+            String status = ResponseStatusCode.STATUS_BUSINESS_ERROR.getStatus();
+            ResponseStatusCode responseStatusCode = biz.getResponseStatusCode();
+            if(responseStatusCode != null){
+                code = responseStatusCode.getCode();
+                msg = responseStatusCode.getStatus();
+                status = responseStatusCode.getStatus();
+            }
+            ajaxResponse.setCode(code);
+            ajaxResponse.setInfo(msg);
+            ajaxResponse.setStatus(status);
         }else if(e instanceof BindException || e instanceof MethodArgumentTypeMismatchException){
             //参数类型错误
             ajaxResponse.setCode(ResponseStatusCode.STATUS_BUSINESS_ERROR.getCode());

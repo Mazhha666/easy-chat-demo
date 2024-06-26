@@ -16,7 +16,7 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
-      url: jdbc:mysql://192.168.83.140:3306/easychat
+      url: jdbc:mysql://192.168.83.187:3306/easychat
       username: root
       password: miaomiao
       driver-class-name: com.mysql.cj.jdbc.Driver

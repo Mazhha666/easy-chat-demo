@@ -1,6 +1,8 @@
 package com.atmiao.wechatdemo.service.impl;
 
 import com.alibaba.druid.util.StringUtils;
+import com.atmiao.wechatdemo.commons.Constants;
+import com.atmiao.wechatdemo.commons.ResponseStatusCode;
 import com.atmiao.wechatdemo.commons.enums.BeautyAccountStatusEnum;
 import com.atmiao.wechatdemo.commons.enums.UserContactTypeEnum;
 import com.atmiao.wechatdemo.commons.enums.UserStatusEnum;
@@ -16,6 +18,7 @@ import com.atmiao.wechatdemo.utils.JwtHelper;
 import com.atmiao.wechatdemo.utils.MD5Util;
 import com.atmiao.wechatdemo.utils.RedisComponent;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.atmiao.wechatdemo.pojo.UserInfo;
 import com.atmiao.wechatdemo.service.UserInfoService;
@@ -24,7 +27,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
@@ -57,9 +63,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         if (null != userInfo) {
             throw new BusinessException("邮箱已经被使用");
         }
-        //TODO 普通userId
+        // 普通userId
         String userId = CommonUtils.getUserId();
-        //TODO 靓号的赋予(此邮箱是靓号而且未被使用)
+        // 靓号的赋予(此邮箱是靓号而且未被使用)
         LambdaQueryWrapper<UserInfoBeauty> wrapper2 = new LambdaQueryWrapper<>();
         wrapper2.eq(UserInfoBeauty::getEmail, registerPojo.getEmail());
         UserInfoBeauty userInfoBeauty = userInfoBeautyMapper.selectOne(wrapper2);
@@ -68,7 +74,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
             //设置靓号的id
             userId = UserContactTypeEnum.USER.getPrefix() + userInfoBeauty.getUserId();
         }
-        //TODO 插入数据
+        // 插入数据
         LocalDateTime now = LocalDateTime.now();
         Date date = new Date(now.toInstant(ZoneOffset.ofHours(+8)).toEpochMilli());
         UserInfo newUser = new UserInfo();
@@ -82,7 +88,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         newUser.setCreateTime(now);
         newUser.setLastOffTime(date.getTime());
         userInfoMapper.insert(newUser);
-        //TODO 数据库靓号的改变
+        // 数据库靓号的改变
         if (userInfoBeautyFlag) {
             userInfoBeauty.setStatus(BeautyAccountStatusEnum.USED.getStatus());
             userInfoBeautyMapper.updateById(userInfoBeauty);
@@ -93,20 +99,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
 
     @Override
     public TokenUserInfoVo login(RegisterPojo registerPojo) {
-        //TODO 先去数据库查询邮箱是否存在，满足唯一性
+        // 先去数据库查询邮箱是否存在，满足唯一性
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserInfo::getEmail, registerPojo.getEmail());
         UserInfo userInfo = userInfoMapper.selectOne(wrapper);
         if (null == userInfo || !userInfo.getPassword().equals(MD5Util.encrypt(registerPojo.getPassword())))
             throw new BusinessException("密码错误");
-        //TODO 查看是否封禁
+        // 查看是否封禁
         if(Objects.equals(userInfo.getStatus(), UserStatusEnum.DISABLE.getStatus())){
             throw  new BusinessException("用户被封禁");
         }
         //token的返回 admin权限的检测
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto(userInfo);
-        //TODO 查询我的群组，
-        //TODO 查询我的好友
+        // 查询我的群组，
+        // 查询我的好友
         //检查心跳，验证是否重复登录
         Long userHeartBeat = redisComponent.getUserHeartBeat(userInfo.getUserId());
         if(userHeartBeat != null){
@@ -125,6 +131,61 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         tokenUserInfoVo.setToken(tokenUserInfoDto.getToken());
         tokenUserInfoVo.setAdmin(tokenUserInfoDto.getAdmin());
         return  tokenUserInfoVo ;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveUserInfo(UserInfo userInfo, MultipartFile avatarFile, MultipartFile avatarCover) {
+        if(null != avatarFile){
+            //保存头像到本地
+            String baseFolder = appConfig.getProjectFolder()  + Constants.FILE_FOLDER_FILE;
+            File targetFileFolder = new File(baseFolder + Constants.FILE_FOLDER_AVATAR_NAME);
+            if(!targetFileFolder.exists()){
+                targetFileFolder.mkdirs();
+            }
+            String filePath = targetFileFolder.getPath() + "/" + userInfo.getUserId() + Constants.IMAGE_SUFFIX;
+            try {
+                avatarFile.transferTo(new File(filePath));
+                avatarFile.transferTo(new File(filePath + Constants.COVER_IMAGE_SUFFIX));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        UserInfo dbInfo = userInfoMapper.selectById(userInfo.getUserId());
+        userInfoMapper.updateById(userInfo);
+        String contactNameUpdate = null;
+        if(!dbInfo.getNickName().equals(userInfo.getNickName())){
+            contactNameUpdate = userInfo.getNickName();
+        }
+        //TODO 更新会话中的昵称信息
+    }
+
+    @Override
+    public Page<UserInfo> loadUser() {
+        //TODO 后面再修改 分页啥的
+        Page<UserInfo> userInfoPage = new Page<>(0,-1);
+        LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(UserInfo::getJoinType);
+        Page<UserInfo> infoPage = userInfoMapper.selectPage(userInfoPage, wrapper);
+        return infoPage;
+    }
+
+    @Override
+    public void updateUserStatus(Integer status, String userId) {
+        UserStatusEnum userEnum = UserStatusEnum.getByStatus(status);
+        if(userEnum == null){
+            throw new BusinessException(ResponseStatusCode.STATUS_BUSINESS_ERROR);
+        }
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUserId(userId);
+        userInfo.setStatus(userEnum.getStatus());
+        userInfoMapper.updateById(userInfo);
+
+    }
+
+    @Override
+    public void forceOffline(String userId) {
+        //TODO 强制下线
     }
 
     private TokenUserInfoDto getTokenUserInfoDto(UserInfo userInfo){

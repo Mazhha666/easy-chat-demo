@@ -1,4 +1,5 @@
 package com.atmiao.wechatdemo.mapper;
+import org.apache.ibatis.annotations.Param;
 
 import com.atmiao.wechatdemo.pojo.UserInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -12,6 +13,10 @@ import org.apache.ibatis.annotations.Mapper;
 */
 @Mapper
 public interface UserInfoMapper extends BaseMapper<UserInfo> {
+    UserInfo queryOneByEmail(@Param("email") String email);
+
+    UserInfo queryOneByUserId(@Param("userId") String userId);
+
 
 }
 

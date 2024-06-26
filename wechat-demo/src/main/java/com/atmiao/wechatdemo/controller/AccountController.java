@@ -1,6 +1,7 @@
 package com.atmiao.wechatdemo.controller;
 
 import com.alibaba.druid.util.StringUtils;
+import com.atmiao.wechatdemo.annotions.GlobalInterceptor;
 import com.atmiao.wechatdemo.commons.Constants;
 import com.atmiao.wechatdemo.commons.ResponseVo;
 import com.atmiao.wechatdemo.dto.TokenUserInfoDto;
@@ -9,9 +10,11 @@ import com.atmiao.wechatdemo.pojo.RegisterPojo;
 import com.atmiao.wechatdemo.pojo.TokenUserInfoVo;
 import com.atmiao.wechatdemo.pojo.UserInfo;
 import com.atmiao.wechatdemo.service.UserInfoService;
+import com.atmiao.wechatdemo.utils.RedisComponent;
 import com.atmiao.wechatdemo.utils.RedisUtils;
 import com.wf.captcha.ArithmeticCaptcha;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,8 @@ public class AccountController {
     RedisUtils redisUtils;
     @Autowired
     UserInfoService userInfoService;
+    @Autowired
+    RedisComponent redisComponent;
     @Operation(summary = "checkcode",description = "生成验证码的方法")
     @GetMapping("/checkcode")
     public ResponseVo<Object> checkCode(){
@@ -73,7 +78,7 @@ public class AccountController {
     }
     @Operation(summary = "login",description = "登录功能")
     @GetMapping("login")
-    public ResponseVo login(@Validated RegisterPojo registerPojo, BindingResult result){
+    public ResponseVo login( @Validated RegisterPojo registerPojo, BindingResult result){
 
         String res = (String) redisUtils.get(Constants.REDIS_KEY_CHECK_CODE + registerPojo.getCheckCodeKey());
         System.out.println(res);
@@ -90,5 +95,11 @@ public class AccountController {
             //验证不通过就要重新发验证码验证，避免爆破
             redisUtils.del(Constants.REDIS_KEY_CHECK_CODE + registerPojo.getCheckCodeKey());
         }
+    }
+    @Operation(summary = "getSysSetting",description = "得到系统设置")
+    @GetMapping("getSysSetting")
+    @GlobalInterceptor
+    public ResponseVo getSysSetting(){
+        return ResponseVo.getSuccessResponseVo(redisComponent.getSysSetting());
     }
 }

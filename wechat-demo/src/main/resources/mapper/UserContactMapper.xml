@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atmiao.wechatdemo.mapper.UserContactMapper">
+
+    <resultMap id="BaseResultMap" type="com.atmiao.wechatdemo.pojo.UserContact">
+            <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <id property="contactId" column="contact_id" jdbcType="VARCHAR"/>
+            <result property="contactType" column="contact_type" jdbcType="TINYINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="lastUpdateTime" column="last_update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id,contact_id,contact_type,
+        create_time,status,last_update_time
+    </sql>
+    <select id="queryGroups" resultType="com.atmiao.wechatdemo.pojo.UserContact">
+    select c.*
+        <if test="queryUserInfo">
+            ,u.nick_name contactName,u.sex sex
+        </if>
+        from user_contact c
+        <if test="queryUserInfo">
+            inner join user_info u on c.user_id  = u.user_id
+        </if>
+        where c.contact_id = #{groupId} and c.status = #{status} order by c.create_time
+    </select>
+    <select id="queryOneByUserIdAndContactId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_contact
+        where
+        user_id = #{userId,jdbcType=VARCHAR}
+        AND contact_id = #{contactId,jdbcType=VARCHAR}
+    </select>
+    <select id="loadContact" resultType="com.atmiao.wechatdemo.pojo.UserContact">
+        SELECT c.*
+        <if test="query.contactUserInfo">
+            ,u.nick_name contactName,u.sex sex
+        </if>
+        <if test="query.queryGroupInfo">
+            ,g.group_name contactName
+        </if>
+
+        FROM `user_contact` c
+        <if test="query.contactUserInfo">
+            inner JOIN user_info u on c.contact_id = u.user_id
+        </if>
+        <if test="query.queryGroupInfo">
+            inner join group_info g on c.contact_id =g.group_id
+            <if test="query.excludeMyGroup">
+                and g.group_owner_id != c.user_id
+            </if>
+        </if>
+        where c.contact_type = #{query.contactType}
+            and c.user_id =#{query.userId}
+            and c.status in (
+            <foreach collection="query.statusArray" separator="," item="item">
+            #{item}
+            </foreach>)
+        order by c.create_time desc
+    </select>
+</mapper>

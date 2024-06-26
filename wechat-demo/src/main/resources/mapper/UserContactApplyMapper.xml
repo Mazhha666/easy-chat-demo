@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atmiao.wechatdemo.mapper.UserContactApplyMapper">
+
+    <resultMap id="BaseResultMap" type="com.atmiao.wechatdemo.pojo.UserContactApply">
+            <id property="applyId" column="apply_id" jdbcType="INTEGER"/>
+            <result property="applyUserId" column="apply_user_id" jdbcType="VARCHAR"/>
+            <result property="receiveUserId" column="receive_user_id" jdbcType="VARCHAR"/>
+            <result property="contactType" column="contact_type" jdbcType="TINYINT"/>
+            <result property="contactId" column="contact_id" jdbcType="VARCHAR"/>
+            <result property="lastApplyTime" column="last_apply_time" jdbcType="BIGINT"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="applyInfo" column="apply_info" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        apply_id,apply_user_id,receive_user_id,
+        contact_type,contact_id,last_apply_time,
+        status,apply_info
+    </sql>
+    <select id="queryOneByApplyUserIdAndContactId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_contact_apply
+        where
+        apply_user_id = #{applyUserId,jdbcType=VARCHAR}
+        AND contact_id = #{contactId,jdbcType=VARCHAR}
+    </select>
+    <select id="loadApply" resultType="com.atmiao.wechatdemo.pojo.UserContactApply">
+        select a.*
+               <if test="queryContactInfo">
+                   , case when a.contact_type = 0 then u.nick_name
+                   when a.contact_type = 1 then g.group_name
+                   end as contactName
+               </if>
+        from user_contact_apply
+            <if test="queryContactInfo">
+                a left join user_info u on a.apply_user_id = u.user_id left join group_info g on g.group_id = a.contact_id
+            </if>
+           where a.receive_user_id = #{userId} order by a.last_apply_time desc
+    </select>
+</mapper>

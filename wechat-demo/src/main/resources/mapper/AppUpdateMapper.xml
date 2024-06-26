@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atmiao.wechatdemo.mapper.AppUpdateMapper">
+
+    <resultMap id="BaseResultMap" type="com.atmiao.wechatdemo.pojo.AppUpdate">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="version" column="version" jdbcType="VARCHAR"/>
+            <result property="updateDesc" column="update_desc" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+            <result property="grayscaleUid" column="grayscale_uid" jdbcType="VARCHAR"/>
+            <result property="fileType" column="file_type" jdbcType="TINYINT"/>
+            <result property="outerLink" column="outer_link" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,version,update_desc,
+        create_time,status,grayscale_uid,
+        file_type,outer_link
+    </sql>
+    <select id="queryOneByVersion" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_update
+        where
+        version = #{version,jdbcType=VARCHAR}
+    </select>
+    <select id="selectLatestUpdate" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List"></include>
+            from app_update where version > #{appVersion} and (
+        status = 2 or
+        (status = 1 and FIND_IN_SET(#{uid},grayscale_uid))
+                ) ORDER BY id desc limit 0,1
+    </select>
+</mapper>

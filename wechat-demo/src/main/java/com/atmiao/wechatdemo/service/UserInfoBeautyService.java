@@ -1,6 +1,8 @@
 package com.atmiao.wechatdemo.service;
 
+import com.atmiao.wechatdemo.pojo.UserInfo;
 import com.atmiao.wechatdemo.pojo.UserInfoBeauty;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -10,4 +12,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface UserInfoBeautyService extends IService<UserInfoBeauty> {
 
+    Page<UserInfoBeauty> loadBeauty();
+
+    void saveBeautyAccount(UserInfoBeauty userInfoBeauty);
 }

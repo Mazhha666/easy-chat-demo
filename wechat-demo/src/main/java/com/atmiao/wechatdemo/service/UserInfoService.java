@@ -4,7 +4,9 @@ import com.atmiao.wechatdemo.dto.TokenUserInfoDto;
 import com.atmiao.wechatdemo.pojo.RegisterPojo;
 import com.atmiao.wechatdemo.pojo.TokenUserInfoVo;
 import com.atmiao.wechatdemo.pojo.UserInfo;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
 * @author musichao
@@ -16,4 +18,12 @@ public interface UserInfoService extends IService<UserInfo> {
     void register(RegisterPojo registerPojo);
 
     TokenUserInfoVo login(RegisterPojo registerPojo);
+
+    void saveUserInfo(UserInfo userInfo, MultipartFile avatarFile, MultipartFile avatarCover);
+
+    Page<UserInfo> loadUser();
+
+    void updateUserStatus(Integer status, String userId);
+
+    void forceOffline(String userId);
 }

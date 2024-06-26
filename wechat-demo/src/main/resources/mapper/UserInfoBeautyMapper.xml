@@ -15,4 +15,18 @@
         id,email,user_id,
         status
     </sql>
+    <select id="queryOneByEmail" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_info_beauty
+        where
+        email = #{email,jdbcType=VARCHAR}
+    </select>
+    <select id="queryOneByUserId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_info_beauty
+        where
+        user_id = #{userId,jdbcType=VARCHAR}
+    </select>
 </mapper>

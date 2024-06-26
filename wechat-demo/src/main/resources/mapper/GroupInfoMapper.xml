@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atmiao.wechatdemo.mapper.GroupInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.atmiao.wechatdemo.pojo.GroupInfo">
+            <id property="groupId" column="group_id" jdbcType="VARCHAR"/>
+            <result property="groupName" column="group_name" jdbcType="VARCHAR"/>
+            <result property="groupOwnerId" column="group_owner_id" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="groupNotice" column="group_notice" jdbcType="VARCHAR"/>
+            <result property="joinType" column="join_type" jdbcType="TINYINT"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        group_id,group_name,group_owner_id,
+        create_time,group_notice,join_type,
+        status
+    </sql>
+    <select id="loadGroup" resultType="com.atmiao.wechatdemo.pojo.GroupInfo">
+        select g.*
+               <if test="query.queryGroupOwnerNickName">
+                   ,u.nick_name groupOwnerNickName,
+               </if>
+               <if test="query.queryMemberCount">
+                   (select count(c.user_id) from user_contact c where c.contact_id = g.group_id)
+                   memberCount
+               </if>
+
+        from group_info g
+        <if test="query.queryGroupOwnerNickName">
+            inner JOIN user_info u on g.group_owner_id = u.user_id
+        </if>
+        order by g.create_time desc
+    </select>
+</mapper>

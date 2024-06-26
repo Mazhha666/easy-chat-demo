@@ -18,7 +18,7 @@ public class SwaggerConfig {
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("wechat")
-                .pathsToMatch("/account/**")
+                .pathsToMatch("/account/**","/group/**" ,"/contact/**","/userInfo/**","/admin/**","/update/**")
                 .build();
     }
     @Bean
