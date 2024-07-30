@@ -1,5 +1,6 @@
 package com.atmiao.wechatdemo.service;
 
+import com.atmiao.wechatdemo.commons.enums.MessageTypeEnum;
 import com.atmiao.wechatdemo.dto.TokenUserInfoDto;
 import com.atmiao.wechatdemo.pojo.GroupInfo;
 import com.atmiao.wechatdemo.pojo.GroupMFVo;
@@ -22,4 +23,7 @@ public interface GroupInfoService extends IService<GroupInfo> {
     Page<GroupInfo> loadGroup();
 
     void distributeGroup(String groupOwnerId, String groupId);
+
+    void addOrRemoveGroupUser(TokenUserInfoDto tokenUserInfoDto, String groupId, String selectContacts, Integer opType);
+    void leaveGroup(String userId, String groupId, MessageTypeEnum messageTypeEnum);
 }

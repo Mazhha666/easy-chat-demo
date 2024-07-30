@@ -71,6 +71,9 @@ public class UserContactApply implements Serializable {
     //显示拉黑状态
     @TableField(exist = false)
     private String statusName;
+    //MessageSendDto 三天内申请添加好友的总人数
+    @TableField(exist = false)
+    private Long lastApplyTimeStamp;
 
     public String getStatusName() {
         UserContactStatusEnum statusEnum = UserContactStatusEnum.getByStatus(status);

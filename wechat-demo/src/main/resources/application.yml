@@ -1,4 +1,5 @@
 
+
 server:
   port: 5050
   servlet:
@@ -8,15 +9,15 @@ server:
 spring:
   servlet:
     multipart:
-      max-file-size: 15MB
-      max-request-size: 15MB
+      max-file-size: 500MB
+      max-request-size: 500MB
   web:
     resources:
       static-locations: classpath:/webapp
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
-      url: jdbc:mysql://192.168.83.187:3306/easychat
+      url: jdbc:mysql://192.168.83.177:3306/easychat
       username: root
       password: miaomiao
       driver-class-name: com.mysql.cj.jdbc.Driver
@@ -46,6 +47,9 @@ spring:
       max-pool-prepared-statement-per-connection-size: -1
       # 合并多个DruidDataSource的监控数据
       use-global-data-source-stat: true
+#  redis:
+#    redisson:
+#      file: classpath:redisson.yaml
 
 
 

@@ -1,4 +1,5 @@
 package com.atmiao.wechatdemo.mapper;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.atmiao.wechatdemo.pojo.AppUpdate;
@@ -10,6 +11,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @createDate 2024-06-23 15:07:32
 * @Entity com.atmiao.wechatdemo.pojo.AppUpdate
 */
+@Mapper
 public interface AppUpdateMapper extends BaseMapper<AppUpdate> {
     AppUpdate queryOneByVersion(@Param("version") String version);
 

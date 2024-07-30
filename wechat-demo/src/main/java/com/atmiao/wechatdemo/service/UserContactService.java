@@ -30,4 +30,5 @@ public interface UserContactService extends IService<UserContact> {
     List<UserContact> loadContact(String userId, String contactType);
 
     void removeUserContact(String userId, String contactId, UserContactStatusEnum userContactStatusEnum);
+    void addContact4Robot(String userId);
 }

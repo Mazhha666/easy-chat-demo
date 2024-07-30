@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,10 @@ public final class RedisUtils {
     @Autowired
     @Qualifier("redisTemplate")
     private RedisTemplate redisTemplate;
+    public void listPush(String key, List<String> contactIds, Integer days){
+        redisTemplate.opsForList().rightPushAll(key,contactIds);
+        redisTemplate.expire(key,days,TimeUnit.DAYS);
+    }
 
     // =============================common============================
 

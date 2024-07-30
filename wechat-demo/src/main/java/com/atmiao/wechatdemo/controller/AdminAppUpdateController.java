@@ -36,14 +36,14 @@ public class AdminAppUpdateController {
     @Autowired
     private AppUpdateService appUpdateService;
     @Operation(summary = "loadUpdateList", description = "获取更新列表")
-    @GetMapping("loadUpdateList")
+    @PostMapping("loadUpdateList")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo loadUpdateList() {
         Page<AppUpdate> page = appUpdateService.loadUpdateList();
         return ResponseVo.getSuccessResponseVo(page);
     }
     @Operation(summary = "saveUpdate", description = "保存更新")
-    @GetMapping("saveUpdate")
+    @PostMapping("saveUpdate")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo saveUpdate(@RequestParam(value = "id",required = false) Integer id,//修改或者新增
                                  @RequestParam("version") @NotEmpty String version,
@@ -62,7 +62,7 @@ public class AdminAppUpdateController {
         return ResponseVo.getSuccessResponseVo(null);
     }
     @Operation(summary = "delUpdate", description = "删除版本更新")
-    @GetMapping("delUpdate")
+    @PostMapping("delUpdate")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo delUpdate(@RequestParam("id") @NotNull Integer id) {
         //已经发布的不能删除
@@ -74,7 +74,7 @@ public class AdminAppUpdateController {
         return ResponseVo.getSuccessResponseVo(null);
     }
     @Operation(summary = "postUpdate", description = "发布版本更新")
-    @GetMapping("postUpdate")
+    @PostMapping("postUpdate")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo postUpdate(@RequestParam("id") @NotNull Integer id,
                                  @RequestParam("status") @NotNull Integer status,

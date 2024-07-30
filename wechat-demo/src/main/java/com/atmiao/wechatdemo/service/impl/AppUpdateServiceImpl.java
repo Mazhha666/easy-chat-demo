@@ -39,7 +39,7 @@ public class AppUpdateServiceImpl extends ServiceImpl<AppUpdateMapper, AppUpdate
     @Override
     public Page<AppUpdate> loadUpdateList() {
         //TODO 需要后续修改
-        Page<AppUpdate> appUpdatePage = new Page<>(0, -1);
+        Page<AppUpdate> appUpdatePage = new Page<>(0, 20);
         LambdaQueryWrapper<AppUpdate> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(AppUpdate::getId);
         Page<AppUpdate> appUpdatePage1 = appUpdateMapper.selectPage(appUpdatePage, wrapper);

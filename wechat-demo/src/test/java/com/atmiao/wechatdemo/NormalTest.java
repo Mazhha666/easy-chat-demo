@@ -4,6 +4,8 @@ import com.atmiao.wechatdemo.commons.enums.UserContactStatusEnum;
 import com.atmiao.wechatdemo.utils.CommonUtils;
 import com.atmiao.wechatdemo.utils.JwtHelper;
 
+import java.util.ArrayList;
+
 /**
  * @author miao
  * @version 1.0
@@ -19,5 +21,7 @@ public class NormalTest {
 //        String string = JwtHelper.getUserId(token).toString();
 //        System.out.println(string);
         System.out.println(UserContactStatusEnum.FRIEND.toString());
+        ArrayList<Object> objects = new ArrayList<>();
+
     }
 }

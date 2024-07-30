@@ -33,7 +33,7 @@ public class AdminUserInfoBeautyController {
     @Autowired
     private UserInfoBeautyService userInfoBeautyService;
     @Operation(summary = "loadBeautyAccountList",description = "得到全部靓号用户信息")
-    @GetMapping("loadBeautyAccountList")
+    @PostMapping("loadBeautyAccountList")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo loadBeautyAccountList(){
         Page<UserInfoBeauty> page = userInfoBeautyService.loadBeauty();
@@ -41,7 +41,7 @@ public class AdminUserInfoBeautyController {
 
     }
     @Operation(summary = "saveBeautyAccount",description = "保存靓号")
-    @GetMapping("saveBeautyAccount")
+    @PostMapping("saveBeautyAccount")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo saveBeautyAccount(UserInfoBeauty userInfoBeauty){
         userInfoBeautyService.saveBeautyAccount(userInfoBeauty);
@@ -50,7 +50,7 @@ public class AdminUserInfoBeautyController {
     }
     //@RequestParam("id")
     @Operation(summary = "delBeautyAccount",description = "删除靓号")
-    @GetMapping("delBeautyAccount")
+    @PostMapping("delBeautyAccount")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo delBeautyAccount(@NotNull Integer id){
         //已经在使用的不能删除

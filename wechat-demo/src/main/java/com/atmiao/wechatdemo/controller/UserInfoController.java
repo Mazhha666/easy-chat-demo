@@ -12,6 +12,7 @@ import com.atmiao.wechatdemo.service.UserInfoService;
 import com.atmiao.wechatdemo.utils.CopyUtil;
 import com.atmiao.wechatdemo.utils.MD5Util;
 import com.atmiao.wechatdemo.utils.RedisComponent;
+import com.atmiao.wechatdemo.websosket.ChannelContextUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,8 +40,10 @@ public class UserInfoController {
     private RedisComponent redisComponent;
     @Autowired
     private UserInfoService userInfoService;
+    @Autowired
+    private ChannelContextUtils channelContextUtils;
     @Operation(summary = "getUserInfo", description = "获取用户信息")
-    @GetMapping("getUserInfo")
+    @PostMapping("getUserInfo")
     @GlobalInterceptor
     public ResponseVo getUserInfo(HttpServletRequest request) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);
@@ -50,7 +53,7 @@ public class UserInfoController {
         return ResponseVo.getSuccessResponseVo(userInfoVo);
     }
     @Operation(summary = "saveUserInfo", description = "保存用户信息")
-    @GetMapping("saveUserInfo")
+    @PostMapping("saveUserInfo")
     @GlobalInterceptor
     public ResponseVo saveUserInfo(HttpServletRequest request, UserInfo userInfo,
                                    @RequestParam(value = "avatarFile",required = false) MultipartFile avatarFile,
@@ -65,7 +68,7 @@ public class UserInfoController {
         return getUserInfo(request);
     }
     @Operation(summary = "updatePassword", description = "修改密码")
-    @GetMapping("updatePassword")
+    @PostMapping("updatePassword")
     @GlobalInterceptor
     public ResponseVo updatePassword(HttpServletRequest request,@RequestParam("password")
                                     @Pattern(regexp = Constants.REGEX_PASSWORD) String password) {
@@ -74,15 +77,17 @@ public class UserInfoController {
         userInfo.setUserId(tokenUserInfoDto.getUserId());
         userInfo.setPassword(MD5Util.encrypt(password));
         userInfoService.updateById(userInfo);
-        //TODO 强制退出，重新登陆
+        // 强制退出，重新登陆
+        channelContextUtils.closeContact(tokenUserInfoDto.getUserId());
         return ResponseVo.getSuccessResponseVo(null);
     }
     @Operation(summary = "logout", description = "退出登录")
-    @GetMapping("logout")
+    @PostMapping("logout")
     @GlobalInterceptor
     public ResponseVo logout(HttpServletRequest request) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);
-        //TODO 退出登陆，关闭ws连接
+        // 退出登陆，关闭ws连接
+        channelContextUtils.closeContact(tokenUserInfoDto.getUserId());
         return ResponseVo.getSuccessResponseVo(null);
     }
 

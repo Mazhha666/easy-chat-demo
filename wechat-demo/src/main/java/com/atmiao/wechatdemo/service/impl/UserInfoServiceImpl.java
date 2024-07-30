@@ -3,24 +3,24 @@ package com.atmiao.wechatdemo.service.impl;
 import com.alibaba.druid.util.StringUtils;
 import com.atmiao.wechatdemo.commons.Constants;
 import com.atmiao.wechatdemo.commons.ResponseStatusCode;
-import com.atmiao.wechatdemo.commons.enums.BeautyAccountStatusEnum;
-import com.atmiao.wechatdemo.commons.enums.UserContactTypeEnum;
-import com.atmiao.wechatdemo.commons.enums.UserStatusEnum;
+import com.atmiao.wechatdemo.commons.enums.*;
 import com.atmiao.wechatdemo.config.AppConfig;
+import com.atmiao.wechatdemo.dto.MessageSendDto;
 import com.atmiao.wechatdemo.dto.TokenUserInfoDto;
 import com.atmiao.wechatdemo.exception.BusinessException;
+import com.atmiao.wechatdemo.mapper.UserContactMapper;
 import com.atmiao.wechatdemo.mapper.UserInfoBeautyMapper;
-import com.atmiao.wechatdemo.pojo.RegisterPojo;
-import com.atmiao.wechatdemo.pojo.TokenUserInfoVo;
-import com.atmiao.wechatdemo.pojo.UserInfoBeauty;
+import com.atmiao.wechatdemo.pojo.*;
+import com.atmiao.wechatdemo.service.ChatSessionUserService;
+import com.atmiao.wechatdemo.service.UserContactService;
 import com.atmiao.wechatdemo.utils.CommonUtils;
 import com.atmiao.wechatdemo.utils.JwtHelper;
 import com.atmiao.wechatdemo.utils.MD5Util;
 import com.atmiao.wechatdemo.utils.RedisComponent;
+import com.atmiao.wechatdemo.websosket.netty.MessageHandler;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.atmiao.wechatdemo.pojo.UserInfo;
 import com.atmiao.wechatdemo.service.UserInfoService;
 import com.atmiao.wechatdemo.mapper.UserInfoMapper;
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,7 +34,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
 * @author musichao
@@ -45,13 +47,21 @@ import java.util.Objects;
 public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
     implements UserInfoService {
     @Autowired
-    UserInfoMapper userInfoMapper;
+    private UserInfoMapper userInfoMapper;
     @Autowired
-    UserInfoBeautyMapper userInfoBeautyMapper;
+    private UserInfoBeautyMapper userInfoBeautyMapper;
     @Autowired
-    AppConfig appConfig;
+    private AppConfig appConfig;
     @Autowired
-    RedisComponent redisComponent;
+    private RedisComponent redisComponent;
+    @Autowired
+    private UserContactMapper userContactMapper;
+    @Autowired
+    private UserContactService userContactService;
+    @Autowired
+    private ChatSessionUserService chatSessionUserService;
+    @Autowired
+    private MessageHandler messageHandler;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -81,7 +91,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         newUser.setUserId(userId);
         newUser.setEmail(registerPojo.getEmail());
         newUser.setNickName(registerPojo.getNickName());
-        newUser.setJoinType(0);
+        newUser.setJoinType(1);
         newUser.setSex(0);
         newUser.setPassword(MD5Util.encrypt(registerPojo.getPassword()));
         newUser.setStatus(UserStatusEnum.ENABLE.getStatus());
@@ -94,6 +104,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
             userInfoBeautyMapper.updateById(userInfoBeauty);
         }
         //TODO 创建机器人好友(接入chatgpt)
+        userContactService.addContact4Robot(userId);
 
     }
 
@@ -112,7 +123,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         //token的返回 admin权限的检测
         TokenUserInfoDto tokenUserInfoDto = getTokenUserInfoDto(userInfo);
         // 查询我的群组，
-        // 查询我的好友
+        List<UserContact> userContactList = userContactMapper.queryAllByUserIdAndStatus(userInfo.getUserId(), UserContactStatusEnum.FRIEND.getStatus());
+        List<String> contactList = userContactList.stream().map(item -> item.getContactId()).collect(Collectors.toList());
+        //清除以前信息
+        redisComponent.cleanUserContact(userInfo.getUserId());
+        if(!userContactList.isEmpty()){
+            redisComponent.addUserContactBatch(userInfo.getUserId(),contactList);
+        }
+
+        //查询我的好友
         //检查心跳，验证是否重复登录
         Long userHeartBeat = redisComponent.getUserHeartBeat(userInfo.getUserId());
         if(userHeartBeat != null){
@@ -146,7 +165,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
             String filePath = targetFileFolder.getPath() + "/" + userInfo.getUserId() + Constants.IMAGE_SUFFIX;
             try {
                 avatarFile.transferTo(new File(filePath));
-                avatarFile.transferTo(new File(filePath + Constants.COVER_IMAGE_SUFFIX));
+                avatarCover.transferTo(new File(filePath + Constants.COVER_IMAGE_SUFFIX));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -157,13 +176,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         if(!dbInfo.getNickName().equals(userInfo.getNickName())){
             contactNameUpdate = userInfo.getNickName();
         }
-        //TODO 更新会话中的昵称信息
+        if(contactNameUpdate == null){
+            return;
+        }
+        TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDtoByUserId(userInfo.getUserId());
+        tokenUserInfoDto.setNickName(contactNameUpdate);
+        redisComponent.saveTokenUserInfoDto(tokenUserInfoDto);
+        // 更新会话中的昵称信息
+        chatSessionUserService.updateRedundantInfo(contactNameUpdate, userInfo.getUserId());
+
     }
 
     @Override
     public Page<UserInfo> loadUser() {
-        //TODO 后面再修改 分页啥的
-        Page<UserInfo> userInfoPage = new Page<>(0,-1);
+        //TODO 后面再修改 分页啥的 nickNameFuzzy userId
+        Page<UserInfo> userInfoPage = new Page<>(1,20);
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(UserInfo::getJoinType);
         Page<UserInfo> infoPage = userInfoMapper.selectPage(userInfoPage, wrapper);
@@ -185,7 +212,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
 
     @Override
     public void forceOffline(String userId) {
-        //TODO 强制下线
+        //强制下线
+        MessageSendDto<Object> messageSendDto = new MessageSendDto<>();
+        messageSendDto.setContactId(userId);
+        messageSendDto.setMessageType(MessageTypeEnum.FORCE_OFF_LINE.getType());
+        messageSendDto.setContactType(UserContactTypeEnum.USER.getType());
+        messageHandler.sendMessage(messageSendDto);
     }
 
     private TokenUserInfoDto getTokenUserInfoDto(UserInfo userInfo){

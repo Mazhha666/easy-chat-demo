@@ -2,6 +2,7 @@ package com.atmiao.wechatdemo.mapper;
 
 import com.atmiao.wechatdemo.pojo.GroupInfo;
 import com.atmiao.wechatdemo.pojo.UserContact;
+import com.atmiao.wechatdemo.pojo.UserContactApply;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -20,8 +21,21 @@ public interface UserContactMapper extends BaseMapper<UserContact> {
                                   @Param("status") Integer status,
                                   @Param("queryUserInfo")Boolean queryUserInfo);
 
+    List<UserContact> queryAllByUserIdAndStatus(@Param("userId") String userId, @Param("status") Integer status);
     UserContact queryOneByUserIdAndContactId(@Param("userId") String userId, @Param("contactId") String contactId);
     List<UserContact> loadContact(@Param("query") UserContact userContact);
+
+    List<UserContact> queryAllByContactIdAndStatus(@Param("contactId") String contactId, @Param("status") Integer status);
+
+    List<UserContact> queryAllByContactIdAndContactTypeAndStatus(@Param("contactId") String contactId, @Param("contactType") Integer contactType, @Param("status") Integer status);
+
+    UserContact queryOneByUserIdAndContactIdAndContactTypeAndStatus(@Param("userId") String userId, @Param("contactId") String contactId, @Param("contactType") Integer contactType, @Param("status") Integer status);
+
+    int delByUserIdAndContactId(@Param("userId") String userId, @Param("contactId") String contactId);
+
+    int updateStatusByUserIdAndContactId(@Param("status") Integer status, @Param("userId") String userId, @Param("contactId") String contactId);
+
+
 }
 
 

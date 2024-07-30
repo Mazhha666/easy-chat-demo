@@ -16,6 +16,7 @@ import com.atmiao.wechatdemo.service.UserContactService;
 import com.atmiao.wechatdemo.service.UserInfoService;
 import com.atmiao.wechatdemo.utils.CommonUtils;
 import com.atmiao.wechatdemo.utils.JwtHelper;
+import com.atmiao.wechatdemo.utils.RedisComponent;
 import com.atmiao.wechatdemo.utils.RedisUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -42,6 +43,8 @@ class WechatDemoApplicationTests {
     GroupInfoService groupInfoService;
     @Autowired
     AppUpdateService appUpdateService;
+    @Autowired
+    RedisComponent redisComponent;
 
     @Test
     void contextLoads() {
@@ -101,6 +104,11 @@ class WechatDemoApplicationTests {
         Page<AppUpdate> appUpdatePage = appUpdateService.loadUpdateList();
         System.out.println(appUpdatePage.getRecords());
 
+    }
+    @Test
+    void testRedis(){
+        List<String> userContactList = redisComponent.getUserContactList("U30734455307");
+        System.out.println(userContactList);
     }
 
 }

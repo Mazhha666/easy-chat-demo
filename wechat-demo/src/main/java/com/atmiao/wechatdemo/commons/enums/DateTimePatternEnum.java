@@ -6,6 +6,7 @@ package com.atmiao.wechatdemo.commons.enums;
  */
 public enum DateTimePatternEnum {
     YYYY_MM_DD_HH_MM_MM("yyyy-MM-dd HH:mm:ss"),
+    YYYYMM("yyyyMM"),
     YYYY_MM_DD("yyyy-MM-dd");
     private String pattern;
 

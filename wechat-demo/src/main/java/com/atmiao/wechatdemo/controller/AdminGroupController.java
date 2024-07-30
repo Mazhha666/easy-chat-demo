@@ -31,7 +31,7 @@ public class AdminGroupController {
     private GroupInfoService groupInfoService;
 
     @Operation(summary = "loadGroup", description = "得到全部群组信息")
-    @GetMapping("loadGroup")
+    @PostMapping("loadGroup")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo loadGroup() {
         Page<GroupInfo> page = groupInfoService.loadGroup();
@@ -39,7 +39,7 @@ public class AdminGroupController {
     }
 
     @Operation(summary = "dissolutionGroup", description = "解散群族")
-    @GetMapping("dissolutionGroup")
+    @PostMapping("adminDiss")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo dissolutionGroup(@RequestParam("groupId") @NotEmpty String groupId) {
         GroupInfo groupInfo = groupInfoService.getById(groupId);

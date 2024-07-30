@@ -1,5 +1,13 @@
 package com.atmiao.wechatdemo.config;
 
+
+
+import lombok.extern.slf4j.Slf4j;
+
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -12,7 +20,23 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * @version 1.0
  */
 @Configuration
+@Slf4j
 public class RedisConfig {
+    @Value("${spring.data.redis.host:}")
+    private String redisHost;
+    @Value("${spring.data.redis.port:}")
+    private Integer redisPort;
+    @Value("${spring.data.redis.password}")
+    private String redisPassword;
+
+    @Bean(name= "redissonClient",destroyMethod = "shutdown")
+    public RedissonClient redissonClient(){
+            Config config = new Config();
+            config.useSingleServer().setAddress("redis://" + redisHost + ":" + redisPort).setPassword(redisPassword);
+            RedissonClient redissonClient = Redisson.create(config);
+            return redissonClient;
+
+    }
 
     @Bean("redisTemplate")
     public RedisTemplate<String, Object> redisTemplate(LettuceConnectionFactory lettuceConnectionFactory)

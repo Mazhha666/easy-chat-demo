@@ -41,4 +41,11 @@
             </if>
            where a.receive_user_id = #{userId} order by a.last_apply_time desc
     </select>
+    <select id="queryInThreeDaysApply" resultType="com.atmiao.wechatdemo.pojo.UserContactApply">
+        select a.* from user_contact_apply a where a.receive_user_id = #{query.receiveUserId}
+        and a.status = #{query.status}
+        <if test="query.lastApplyTimeStamp != null">
+            and a.last_apply_time >= #{query.lastApplyTimeStamp}
+        </if>
+    </select>
 </mapper>

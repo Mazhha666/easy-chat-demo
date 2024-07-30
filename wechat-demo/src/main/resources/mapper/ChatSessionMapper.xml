@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atmiao.wechatdemo.mapper.ChatSessionMapper">
+
+    <resultMap id="BaseResultMap" type="com.atmiao.wechatdemo.pojo.ChatSession">
+            <id property="sessionId" column="session_id" jdbcType="VARCHAR"/>
+            <result property="lastMessage" column="last_message" jdbcType="VARCHAR"/>
+            <result property="lastReceiveTime" column="last_receive_time" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        session_id,last_message,last_receive_time
+    </sql>
+</mapper>

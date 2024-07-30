@@ -1,4 +1,5 @@
 package com.atmiao.wechatdemo.mapper;
+import java.time.LocalDateTime;
 import org.apache.ibatis.annotations.Param;
 
 import com.atmiao.wechatdemo.pojo.UserInfo;
@@ -16,6 +17,11 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     UserInfo queryOneByEmail(@Param("email") String email);
 
     UserInfo queryOneByUserId(@Param("userId") String userId);
+
+    int updateLastLoginTimeByUserId(@Param("lastLoginTime") LocalDateTime lastLoginTime, @Param("userId") String userId);
+
+    int updateLastOffTimeByUserId(@Param("lastOffTime") Long lastOffTime, @Param("userId") String userId);
+
 
 
 }

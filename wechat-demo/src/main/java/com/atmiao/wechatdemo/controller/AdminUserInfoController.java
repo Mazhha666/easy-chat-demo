@@ -30,25 +30,26 @@ public class AdminUserInfoController {
     @Autowired
     private UserInfoService userInfoService;
     @Operation(summary = "loadUser",description = "得到全部用户信息")
-    @GetMapping("loadUser")
+    @PostMapping("loadUser")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo loadUser(){
+        //{current: 1, size: 20, userId: 'dasdas', nickNameFuzzy: 'dasdas'}
         Page<UserInfo> page = userInfoService.loadUser();
         return ResponseVo.getSuccessResponseVo(page);
 
     }
     @Operation(summary = "updateUserStatus",description = "禁用启用用户")
-    @GetMapping("updateUserStatus")
+    @PostMapping("updateUserStatus")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo updateUserStatus(@RequestParam("status")@NotNull Integer status,@NotEmpty String userId){
         userInfoService.updateUserStatus(status,userId);
         return ResponseVo.getSuccessResponseVo(null);
 
     }
-    @Operation(summary = "forceOffline",description = "强制下线")
-    @GetMapping("forceOffline")
+    @Operation(summary = "forceOffLine",description = "强制下线")
+    @PostMapping("forceOffLine")
     @GlobalInterceptor(checkAdmin = true)
-    public ResponseVo forceOffline(@RequestParam("userId")@NotEmpty String userId){
+    public ResponseVo forceOffLine(@RequestParam("userId")@NotEmpty String userId){
         userInfoService.forceOffline(userId);
         return ResponseVo.getSuccessResponseVo(null);
 

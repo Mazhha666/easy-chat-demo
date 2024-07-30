@@ -4,13 +4,12 @@ import com.atmiao.wechatdemo.annotions.GlobalInterceptor;
 import com.atmiao.wechatdemo.commons.ResponseStatusCode;
 import com.atmiao.wechatdemo.commons.ResponseVo;
 import com.atmiao.wechatdemo.commons.enums.UserContactStatusEnum;
+import com.atmiao.wechatdemo.commons.enums.UserContactTypeEnum;
 import com.atmiao.wechatdemo.dto.TokenUserInfoDto;
 import com.atmiao.wechatdemo.dto.UserContactSearchResultDto;
 import com.atmiao.wechatdemo.exception.BusinessException;
-import com.atmiao.wechatdemo.pojo.UserContact;
-import com.atmiao.wechatdemo.pojo.UserContactApply;
-import com.atmiao.wechatdemo.pojo.UserInfo;
-import com.atmiao.wechatdemo.pojo.UserInfoVo;
+import com.atmiao.wechatdemo.pojo.*;
+import com.atmiao.wechatdemo.service.GroupInfoService;
 import com.atmiao.wechatdemo.service.UserContactApplyService;
 import com.atmiao.wechatdemo.service.UserContactService;
 import com.atmiao.wechatdemo.service.UserInfoService;
@@ -50,9 +49,11 @@ public class UserContactController {
     private UserContactApplyService userContactApplyService;
     @Autowired
     private RedisComponent redisComponent;
+    @Autowired
+    private GroupInfoService groupInfoService;
 
     @Operation(summary = "search", description = "搜索群组或好友")
-    @GetMapping("search")
+    @PostMapping("search")
     @GlobalInterceptor
     public ResponseVo search(HttpServletRequest request, @RequestParam("contactId") @NotEmpty String contactId) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);
@@ -61,7 +62,7 @@ public class UserContactController {
     }
 
     @Operation(summary = "applyAdd", description = "申请添加的方法")
-    @GetMapping("applyAdd")
+    @PostMapping("applyAdd")
     @GlobalInterceptor
     public ResponseVo applyAdd(HttpServletRequest request,
                                @RequestParam("contactId") @NotEmpty String contactId,
@@ -73,7 +74,7 @@ public class UserContactController {
     }
 
     @Operation(summary = "loadApply", description = "加载申请信息的方法")
-    @GetMapping("loadApply")
+    @PostMapping("loadApply")
     @GlobalInterceptor
     public ResponseVo loadApply(HttpServletRequest request,@RequestParam("pageNo") Integer pageNo) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);
@@ -82,7 +83,7 @@ public class UserContactController {
     }
 
     @Operation(summary = "dealWithApply", description = "处理申请信息的方法")
-    @GetMapping("dealWithApply")
+    @PostMapping("dealWithApply")
     @GlobalInterceptor
     public ResponseVo dealWithApply(HttpServletRequest request, @RequestParam("applyId")@NotNull Integer applyId, @RequestParam("status")@NotNull Integer status) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);
@@ -91,7 +92,7 @@ public class UserContactController {
     }
 
     @Operation(summary = "loadContact", description = "加载好友和群聊方法")
-    @GetMapping("loadContact")
+    @PostMapping("loadContact")
     @GlobalInterceptor
     public ResponseVo loadContact(HttpServletRequest request,@RequestParam("contactType") @NotNull String contactType) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);
@@ -106,13 +107,27 @@ public class UserContactController {
      * @return
      */
     @Operation(summary = "getContactInfo", description = "加载好友和群聊详细信息")
-    @GetMapping("getContactInfo")
+    @PostMapping("getContactInfo")
     @GlobalInterceptor
     public ResponseVo getContactInfo(HttpServletRequest request, @RequestParam("contactId")@NotNull String contactId) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);
-        UserInfo userInfo = userInfoService.getById(contactId);
-        UserInfoVo userInfoVo = CopyUtil.copy(userInfo, UserInfoVo.class);
+        UserContactTypeEnum contactTypeEnum = UserContactTypeEnum.geByPrefix(contactId);
+        if (contactTypeEnum == null) {
+            throw new BusinessException(ResponseStatusCode.STATUS_BUSINESS_ERROR);
+        }
+        UserInfoVo userInfoVo = new UserInfoVo();
         userInfoVo.setContactStatus(UserContactStatusEnum.NOT_FRIEND.getStatus());
+        if (UserContactTypeEnum.USER == contactTypeEnum) {
+            UserInfo userInfo = userInfoService.getById(contactId);
+            //群聊或者联系人
+
+            userInfoVo = CopyUtil.copy(userInfo, UserInfoVo.class);
+        }else {
+            // 如果是群聊，userinfo就会报错
+            GroupInfo groupInfo = groupInfoService.getById(contactId);
+            userInfoVo.setUserId(contactId);
+            userInfoVo.setNickName(groupInfo.getGroupName());
+        }
         //检验非程序接口
         UserContact contact = userContactService.valid(tokenUserInfoDto.getUserId(), contactId);
         if (contact != null) {
@@ -120,7 +135,6 @@ public class UserContactController {
         }
         return ResponseVo.getSuccessResponseVo(userInfoVo);
     }
-
     /**
      *
      * @param request 一定是联系人
@@ -129,7 +143,7 @@ public class UserContactController {
      */
 
     @Operation(summary = "getContactUserInfo", description = "加载好友详细信息")
-    @GetMapping("getContactUserInfo")
+    @PostMapping("getContactUserInfo")
     @GlobalInterceptor
     public ResponseVo getContactUserInfo(HttpServletRequest request, @RequestParam("contactId")@NotNull String contactId) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);
@@ -146,7 +160,7 @@ public class UserContactController {
         return ResponseVo.getSuccessResponseVo(userInfoVo);
     }
     @Operation(summary = "delContact", description = "删除联系人")
-    @GetMapping("delContact")
+    @PostMapping("delContact")
     @GlobalInterceptor
     public ResponseVo delContact(HttpServletRequest request,@RequestParam("contactId") @NotNull String contactId) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);
@@ -154,7 +168,7 @@ public class UserContactController {
         return ResponseVo.getSuccessResponseVo(null);
     }
     @Operation(summary = "addContact2BlackList", description = "拉黑联系人")
-    @GetMapping("addContact2BlackList")
+    @PostMapping("addContact2BlackList")
     @GlobalInterceptor
     public ResponseVo addContact2BlackList(HttpServletRequest request, @RequestParam("contactId")@NotNull String contactId) {
         TokenUserInfoDto tokenUserInfoDto = redisComponent.getTokenUserInfoDto(request);

@@ -42,8 +42,8 @@ public class AccountController {
     UserInfoService userInfoService;
     @Autowired
     RedisComponent redisComponent;
-    @Operation(summary = "checkcode",description = "生成验证码的方法")
-    @GetMapping("/checkcode")
+    @Operation(summary = "checkCode",description = "生成验证码的方法")
+    @PostMapping("/checkCode")
     public ResponseVo<Object> checkCode(){
         ArithmeticCaptcha captcha = new ArithmeticCaptcha(100,42);
         String code = captcha.text();
@@ -58,7 +58,7 @@ public class AccountController {
         return ResponseVo.getSuccessResponseVo(result);
     }
     @Operation(summary = "register",description = "注册功能")
-    @GetMapping("register")
+    @PostMapping("register")
     public ResponseVo register(@Validated RegisterPojo registerPojo, BindingResult result){
 
         String res = (String) redisUtils.get(Constants.REDIS_KEY_CHECK_CODE + registerPojo.getCheckCodeKey());
@@ -77,7 +77,7 @@ public class AccountController {
         }
     }
     @Operation(summary = "login",description = "登录功能")
-    @GetMapping("login")
+    @PostMapping("login")
     public ResponseVo login( @Validated RegisterPojo registerPojo, BindingResult result){
 
         String res = (String) redisUtils.get(Constants.REDIS_KEY_CHECK_CODE + registerPojo.getCheckCodeKey());
@@ -94,10 +94,11 @@ public class AccountController {
         } finally {
             //验证不通过就要重新发验证码验证，避免爆破
             redisUtils.del(Constants.REDIS_KEY_CHECK_CODE + registerPojo.getCheckCodeKey());
+
         }
     }
     @Operation(summary = "getSysSetting",description = "得到系统设置")
-    @GetMapping("getSysSetting")
+    @PostMapping("getSysSetting")
     @GlobalInterceptor
     public ResponseVo getSysSetting(){
         return ResponseVo.getSuccessResponseVo(redisComponent.getSysSetting());

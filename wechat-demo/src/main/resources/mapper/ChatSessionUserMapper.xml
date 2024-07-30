@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atmiao.wechatdemo.mapper.ChatSessionUserMapper">
+
+    <resultMap id="BaseResultMap" type="com.atmiao.wechatdemo.pojo.ChatSessionUser">
+            <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <id property="contactId" column="contact_id" jdbcType="VARCHAR"/>
+            <result property="sessionId" column="session_id" jdbcType="VARCHAR"/>
+            <result property="contactName" column="contact_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        user_id,contact_id,session_id,
+        contact_name
+    </sql>
+    <select id="querySessionUserList" resultMap="BaseResultMap">
+        select u.* ,
+               s.last_message lastMessage,s.last_receive_time lastReceiveTime ,
+               case when SUBSTRING(u.contact_id,1,1) = 'G'
+                        then (select count(1) from user_contact uc where uc.contact_id = u.contact_id)
+                    else 0
+                   end memberCount
+        from chat_session_user u inner join chat_session s on u.session_id
+        = s.session_id where u.user_id = #{userId} order by s.last_receive_time desc
+    </select>
+    <select id="queryOneByUserIdAndContactId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from chat_session_user
+        where
+        user_id = #{userId,jdbcType=VARCHAR}
+        AND contact_id = #{contactId,jdbcType=VARCHAR}
+    </select>
+    <update id="updateContactNameByUserIdAndContactId">
+        update chat_session_user
+        set contact_name = #{contactName,jdbcType=VARCHAR}
+        where user_id = #{userId,jdbcType=VARCHAR}
+          AND contact_id = #{contactId,jdbcType=VARCHAR}
+    </update>
+    <update id="updateContactNameByContactId">
+        update chat_session_user
+        set contact_name = #{contactName,jdbcType=VARCHAR}
+        where contact_id = #{contactId,jdbcType=VARCHAR}
+    </update>
+    <delete id="delByUserIdAndContactId">
+        delete
+        from chat_session_user
+        where user_id = #{userId,jdbcType=VARCHAR}
+          AND contact_id = #{contactId,jdbcType=VARCHAR}
+    </delete>
+</mapper>

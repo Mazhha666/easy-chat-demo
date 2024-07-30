@@ -44,7 +44,7 @@ public class UpdateController {
      * @return
      */
     @Operation(summary = "checkVersion", description = "检测更新")
-    @GetMapping("checkVersion")
+    @PostMapping("checkVersion")
     @GlobalInterceptor
     public ResponseVo checkVersion(@RequestParam(value = "appVersion",required = false) String appVersion,
                                    @RequestParam(value = "uid",required = false) String uid) {

@@ -36,7 +36,7 @@ public class AdminSettingController {
     AppConfig appConfig;
 
     @Operation(summary = "getSysSetting", description = "得到系统设置")
-    @GetMapping("getSysSetting")
+    @PostMapping("getSysSetting")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo getSysSetting() {
         SysSettingDto sysSetting = redisComponent.getSysSetting();
@@ -44,20 +44,20 @@ public class AdminSettingController {
     }
 
     @Operation(summary = "saveSysSetting", description = "保存系统设置")
-    @GetMapping("saveSysSetting")
+    @PostMapping("saveSysSetting")
     @GlobalInterceptor(checkAdmin = true)
     public ResponseVo saveSysSetting(SysSettingDto sysSettingDto,
-                                     @RequestParam(value = "robotFile",required = false) MultipartFile robotFile,
-                                     @RequestParam(value ="robotCover",required = false) MultipartFile robotCover) throws IOException {
-        if (null != robotFile) {
+                                    MultipartFile avatarFile,
+                                  MultipartFile avatarCover) throws IOException {
+        if (null != avatarCover) {
             String baseFolder = appConfig.getProjectFolder() + Constants.FILE_FOLDER_FILE;
             File targetFileFolder = new File(baseFolder + Constants.FILE_FOLDER_AVATAR_NAME);
             if (!targetFileFolder.exists()) {
                 targetFileFolder.mkdirs();
             }
             String filePath = targetFileFolder.getPath() + "/" + Constants.ROBOT_UID + Constants.IMAGE_SUFFIX;
-            robotFile.transferTo(new File(filePath));
-            robotCover.transferTo(new File(filePath + Constants.COVER_IMAGE_SUFFIX));
+            avatarFile.transferTo(new File(filePath));
+            avatarCover.transferTo(new File(filePath + Constants.COVER_IMAGE_SUFFIX));
         }
         redisComponent.saveSysSetting(sysSettingDto);
         return ResponseVo.getSuccessResponseVo(null);

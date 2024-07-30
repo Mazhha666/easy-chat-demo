@@ -31,7 +31,7 @@ public class UserInfoBeautyServiceImpl extends ServiceImpl<UserInfoBeautyMapper,
     @Override
     public Page<UserInfoBeauty> loadBeauty() {
         //TODO 后面再修改 分页啥的
-        Page<UserInfoBeauty> page = new Page<>(0,-1);
+        Page<UserInfoBeauty> page = new Page<>(1,20);
         LambdaQueryWrapper<UserInfoBeauty> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByDesc(UserInfoBeauty::getId);
         Page<UserInfoBeauty> userInfoBeautyPage = userInfoBeautyMapper.selectPage(page, wrapper);

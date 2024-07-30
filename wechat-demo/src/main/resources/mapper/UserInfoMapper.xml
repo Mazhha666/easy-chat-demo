@@ -41,4 +41,15 @@
         where
         user_id = #{userId,jdbcType=VARCHAR}
     </select>
+
+    <update id="updateLastLoginTimeByUserId">
+        update user_info
+        set last_login_time = #{lastLoginTime}
+        where user_id = #{userId,jdbcType=VARCHAR}
+    </update>
+    <update id="updateLastOffTimeByUserId">
+        update user_info
+        set last_off_time = #{lastOffTime,jdbcType=NUMERIC}
+        where user_id = #{userId,jdbcType=VARCHAR}
+    </update>
 </mapper>

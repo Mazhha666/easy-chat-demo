@@ -63,4 +63,51 @@
             </foreach>)
         order by c.create_time desc
     </select>
+    <select id="queryAllByUserIdAndStatus" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_contact
+        where
+        user_id = #{userId,jdbcType=VARCHAR}
+        AND status = #{status,jdbcType=NUMERIC}
+    </select>
+    <select id="queryAllByContactIdAndStatus" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_contact
+        where
+        contact_id = #{contactId,jdbcType=VARCHAR}
+        AND status = #{status,jdbcType=NUMERIC}
+    </select>
+    <select id="queryAllByContactIdAndContactTypeAndStatus" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_contact
+        where
+        contact_id = #{contactId,jdbcType=VARCHAR}
+        AND contact_type = #{contactType,jdbcType=NUMERIC}
+        AND status = #{status,jdbcType=NUMERIC}
+    </select>
+    <select id="queryOneByUserIdAndContactIdAndContactTypeAndStatus" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from user_contact
+        where
+        user_id = #{userId,jdbcType=VARCHAR}
+        AND contact_id = #{contactId,jdbcType=VARCHAR}
+        AND contact_type = #{contactType,jdbcType=NUMERIC}
+        AND status = #{status,jdbcType=NUMERIC}
+    </select>
+    <delete id="delByUserIdAndContactId">
+        delete
+        from user_contact
+        where user_id = #{userId,jdbcType=VARCHAR}
+          AND contact_id = #{contactId,jdbcType=VARCHAR}
+    </delete>
+    <update id="updateStatusByUserIdAndContactId">
+        update user_contact
+        set status = #{status,jdbcType=NUMERIC}
+        where user_id = #{userId,jdbcType=VARCHAR}
+          AND contact_id = #{contactId,jdbcType=VARCHAR}
+    </update>
 </mapper>

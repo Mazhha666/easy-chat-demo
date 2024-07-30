@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atmiao.wechatdemo.mapper.ChatMessageMapper">
+
+    <resultMap id="BaseResultMap" type="com.atmiao.wechatdemo.pojo.ChatMessage">
+            <id property="messageId" column="message_id" jdbcType="BIGINT"/>
+            <result property="sessionId" column="session_id" jdbcType="VARCHAR"/>
+            <result property="messageType" column="message_type" jdbcType="TINYINT"/>
+            <result property="messageContent" column="message_content" jdbcType="VARCHAR"/>
+            <result property="sendUserId" column="send_user_id" jdbcType="VARCHAR"/>
+            <result property="sendUserNickName" column="send_user_nick_name" jdbcType="VARCHAR"/>
+            <result property="sendTime" column="send_time" jdbcType="BIGINT"/>
+            <result property="contactId" column="contact_id" jdbcType="VARCHAR"/>
+            <result property="contactType" column="contact_type" jdbcType="TINYINT"/>
+            <result property="fileSize" column="file_size" jdbcType="BIGINT"/>
+            <result property="fileName" column="file_name" jdbcType="VARCHAR"/>
+            <result property="fileType" column="file_type" jdbcType="TINYINT"/>
+            <result property="status" column="status" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        message_id,session_id,message_type,
+        messgae_content,send_user_id,send_user_nick_name,
+        send_time,contact_id,contact_type,
+        file_size,file_name,file_type,
+        status
+    </sql>
+    <select id="selectMessageList" resultType="com.atmiao.wechatdemo.pojo.ChatMessage">
+        select c.* from chat_message c
+                   <if test="query.contactIdList != null and query.contactIdList.size() > 0">
+                       where c.contact_id in
+                       <foreach collection="query.contactIdList" item="item" separator="," open="(" close=")">
+                           #{item}
+                       </foreach>
+                       <if test="query.lastReceiveTime != null">
+                           and c.send_time >= #{query.lastReceiveTime}
+                       </if>
+                   </if>
+
+
+    </select>
+    <update id="updateStatusByMessageIdAndStatus">
+        update chat_message
+        set status = #{status,jdbcType=NUMERIC}
+        where message_id = #{messageId,jdbcType=NUMERIC}
+          AND status = #{oldStatus,jdbcType=NUMERIC}
+    </update>
+</mapper>

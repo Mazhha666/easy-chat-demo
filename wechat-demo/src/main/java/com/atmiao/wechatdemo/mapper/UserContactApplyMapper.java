@@ -7,6 +7,8 @@ import com.atmiao.wechatdemo.pojo.UserContactApply;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 /**
 * @author musichao
 * @description 针对表【user_contact_apply】的数据库操作Mapper
@@ -17,6 +19,7 @@ import org.apache.ibatis.annotations.Mapper;
 public interface UserContactApplyMapper extends BaseMapper<UserContactApply> {
     UserContactApply queryOneByApplyUserIdAndContactId(@Param("applyUserId") String applyUserId, @Param("contactId") String contactId);
     Page<UserContactApply> loadApply(Page<UserContactApply> page, @Param("userId")String userId,@Param("queryContactInfo")Boolean queryContactInfo);
+    List<UserContactApply> queryInThreeDaysApply(@Param("query") UserContactApply userContactApply);
 }
 
 
